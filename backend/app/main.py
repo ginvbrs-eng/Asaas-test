@@ -1,4 +1,4 @@
-"""FastAPI entrypoint for ASAAS platform."""
+"""FastAPI entrypoint for ASAAS platform. 2026"""
 
 from __future__ import annotations
 
