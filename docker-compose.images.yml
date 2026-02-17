@@ -1,0 +1,9 @@
+services:
+  backend:
+    image: ginvbrs/asaas-backend:latest
+    build: null
+    volumes: []
+
+  frontend:
+    image: ginvbrs/asaas-frontend:latest
+    build: null
