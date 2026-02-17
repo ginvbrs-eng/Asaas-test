@@ -1,0 +1,102 @@
+services:
+  traefik:
+    image: traefik:v2.11
+    command:
+      - "--api.dashboard=true"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedByDefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8081:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks:
+      - asaas_network
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: asaas
+      POSTGRES_USER: asaas
+      POSTGRES_PASSWORD: asaas_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - asaas_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U asaas"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    networks:
+      - asaas_network
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: asaas
+      MINIO_ROOT_PASSWORD: asaas123456
+    volumes:
+      - minio_data:/data
+    networks:
+      - asaas_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.minio-console.rule=Host(`minio.localhost`)"
+      - "traefik.http.routers.minio-console.service=minio-console"
+      - "traefik.http.services.minio-console.loadbalancer.server.port=9001"
+
+  backend:
+    build: ./backend
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      DATABASE_URL: postgresql+asyncpg://asaas:asaas_password@db:5432/asaas
+      SECRET_KEY: change_this_in_production
+      REDIS_URL: redis://redis:6379
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: asaas
+      MINIO_SECRET_KEY: asaas123456
+      AI_PROVIDER: disabled
+    volumes:
+      - ./backend:/app
+    networks:
+      - asaas_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`api.localhost`)"
+      - "traefik.http.services.api.loadbalancer.server.port=8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: http://api.localhost
+    depends_on:
+      - backend
+    environment:
+      NEXT_PUBLIC_API_URL: http://api.localhost
+    networks:
+      - asaas_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.web.rule=Host(`localhost`)"
+      - "traefik.http.services.web.loadbalancer.server.port=3000"
+
+volumes:
+  postgres_data:
+  minio_data:
+
+networks:
+  asaas_network:
+    driver: bridge
