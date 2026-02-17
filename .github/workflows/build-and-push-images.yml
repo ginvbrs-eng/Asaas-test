@@ -25,11 +25,9 @@ jobs:
           - service: backend
             context: ./backend
             dockerfile: ./backend/Dockerfile
-            image: docker.io/${{ secrets.DOCKERHUB_USERNAME }}/asaas-backend
           - service: frontend
             context: ./frontend
             dockerfile: ./frontend/Dockerfile
-            image: docker.io/${{ secrets.DOCKERHUB_USERNAME }}/asaas-frontend
 
     steps:
       - name: Checkout
@@ -48,7 +46,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ matrix.image }}
+          images: docker.io/${{ secrets.DOCKERHUB_USERNAME }}/asaas-${{ matrix.service }}
           tags: |
             type=sha,format=short
             type=raw,value=latest
