@@ -1,16 +1,19 @@
 name: Build and Push Images
 
 on:
-  push:
-    branches:
-      - main
-    tags:
-      - "v*"
+  # Automatic trigger is disabled for now.
+  # Uncomment this block when you need auto build on push.
+  # push:
+  #   branches:
+  #     - main
+  #   tags:
+  #     - "v*"
+
+  # Manual trigger from GitHub Actions UI.
   workflow_dispatch:
 
 permissions:
   contents: read
-  packages: write
 
 jobs:
   docker:
@@ -22,11 +25,12 @@ jobs:
           - service: backend
             context: ./backend
             dockerfile: ./backend/Dockerfile
-            image: ghcr.io/${{ github.repository_owner }}/asaas-backend
+            image: docker.io/${{ secrets.DOCKERHUB_USERNAME }}/asaas-backend
           - service: frontend
             context: ./frontend
             dockerfile: ./frontend/Dockerfile
-            image: ghcr.io/${{ github.repository_owner }}/asaas-frontend
+            image: docker.io/${{ secrets.DOCKERHUB_USERNAME }}/asaas-frontend
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -34,12 +38,11 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to GHCR
+      - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Docker metadata
         id: meta
@@ -48,9 +51,7 @@ jobs:
           images: ${{ matrix.image }}
           tags: |
             type=sha,format=short
-            type=ref,event=branch
-            type=ref,event=tag
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest
 
       - name: Build and push
         uses: docker/build-push-action@v6
