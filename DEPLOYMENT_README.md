@@ -163,6 +163,18 @@ Open URLs:
 - `https://api.yourdomain.com/health`
 - `https://minio.yourdomain.com`
 
+Internal services:
+- Elasticsearch internal endpoint: `http://elasticsearch:9200`
+
+## 9.1) Verify Elasticsearch in production
+
+Run from server:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.vps.yml --env-file .env.vps exec backend sh -lc "echo $ELASTICSEARCH_URL"
+docker compose -f docker-compose.yml -f docker-compose.vps.yml --env-file .env.vps logs --tail=100 elasticsearch
+```
+
 ## 10) Update to latest images (routine)
 
 When new images are pushed by CI:

@@ -77,6 +77,13 @@ docker compose -f docker-compose.yml -f docker-compose.images.yml up -d
 - API health: `http://api.localhost/health`
 - MinIO: `http://minio.localhost`
 - Traefik dashboard: `http://localhost:8081/dashboard/`
+- Elasticsearch (internal): `http://elasticsearch:9200`
+
+If your task depends on search/indexing:
+
+```bash
+docker compose exec backend sh -lc "echo $ELASTICSEARCH_URL"
+```
 
 ---
 

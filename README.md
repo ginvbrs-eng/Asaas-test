@@ -30,6 +30,7 @@ docker compose up --build
 - API health: `http://api.localhost/health`
 - MinIO console: `http://minio.localhost`
 - Traefik dashboard: `http://localhost:8081/dashboard/`
+- Elasticsearch endpoint (internal Docker network): `http://elasticsearch:9200`
 
 ## 2.1) MinIO account reference
 
@@ -137,6 +138,17 @@ Fix applied:
 - Added required GitHub repository secrets:
   - `DOCKERHUB_USERNAME`
   - `DOCKERHUB_TOKEN`
+
+### Issue J: Add Elasticsearch service for search
+
+Requirement:
+- Add Elasticsearch container for search features and make it available to backend.
+
+Fix applied:
+- Added `elasticsearch` service in `docker-compose.yml`.
+- Added persistent volume `elasticsearch_data`.
+- Added backend env `ELASTICSEARCH_URL=http://elasticsearch:9200`.
+- Added backend dependency on Elasticsearch health check.
 
 ## 4) GitHub Actions - current behavior
 

@@ -36,6 +36,22 @@ services:
     networks:
       - asaas_network
 
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.3
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - asaas_network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:9200/_cluster/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
   minio:
     image: minio/minio:latest
     command: server /data --console-address ":9001"
@@ -60,10 +76,13 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
+      elasticsearch:
+        condition: service_healthy
     environment:
       DATABASE_URL: postgresql+asyncpg://asaas:asaas_password@db:5432/asaas
       SECRET_KEY: change_this_in_production
       REDIS_URL: redis://redis:6379
+      ELASTICSEARCH_URL: http://elasticsearch:9200
       MINIO_ENDPOINT: minio:9000
       MINIO_ACCESS_KEY: asaas
       MINIO_SECRET_KEY: asaas123456
@@ -96,6 +115,7 @@ services:
 volumes:
   postgres_data:
   minio_data:
+  elasticsearch_data:
 
 networks:
   asaas_network:
