@@ -26,17 +26,17 @@ docker compose up --build
 
 ### Main local URLs
 
-- Frontend: `http://localhost`
-- API health: `http://api.localhost/health`
-- MinIO console: `http://minio.localhost`
-- Traefik dashboard: `http://localhost:8081/dashboard/`
+- Frontend: `http://test.localhost`
+- API health: `http://api-test.localhost/health`
+- MinIO console: `http://minio-test.localhost`
+- Traefik dashboard: `http://test.localhost:8082/dashboard/`
 - Elasticsearch endpoint (internal Docker network): `http://elasticsearch:9200`
 
 ## 2.1) MinIO account reference
 
 Use this as your quick reference for local/dev access:
 
-- Console URL: `http://minio.localhost`
+- Console URL: `http://minio-test.localhost`
 - Username: `asaas`
 - Password: `asaas123456`
 - API endpoint (internal Docker network): `minio:9000`
@@ -215,12 +215,12 @@ We prepared `docker-compose.images.yml` so team members can run images directly.
 ```yaml
 services:
   backend:
-    image: ginvbrs/asaas-backend:latest
+    image: ginvbrs/asaas-test_backend:latest
     build: null
     volumes: []
 
   frontend:
-    image: ginvbrs/asaas-frontend:latest
+    image: ginvbrs/asaas-test_frontend:latest
     build: null
 ```
 
